@@ -9,4 +9,6 @@ i="$i code/utils/*.c"
 i="$i code/wayland/*.c"
 i="$i code/wayland/protocol/*.c"
 
+mkdir build
+
 gcc $a -lm -std=c17 -D_GNU_SOURCE -g -o build/run $i
