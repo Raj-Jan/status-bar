@@ -240,12 +240,6 @@ static void draw_meter_text2(double x, int j, double value)
 
 static void draw_player_image(double x)
 {
-	int w = cairo_image_surface_get_width(image);
-	int h = cairo_image_surface_get_height(image);
-
-	double sx = PLAYER_IMAGE_SIZE / (double)w;
-	double sy = PLAYER_IMAGE_SIZE / (double)h;
-
 	double y = (WINDOW_HEIGHT - PLAYER_IMAGE_SIZE) / 2.0;
 
 	draw_square(x, y, PLAYER_IMAGE_SIZE, PLAYER_IMAGE_SIZE, 0);
@@ -255,9 +249,22 @@ static void draw_player_image(double x)
 
 	cairo_clip(cr);
 
-	cairo_scale(cr, sx, sy);
+	if (image)
+	{
+		int w = cairo_image_surface_get_width(image);
+		int h = cairo_image_surface_get_height(image);
+	
+		double sx = PLAYER_IMAGE_SIZE / (double)w;
+		double sy = PLAYER_IMAGE_SIZE / (double)h;
 
-	cairo_set_source_surface(cr, image, x / sx, y / sy);
+		cairo_scale(cr, sx, sy);
+		cairo_set_source_surface(cr, image, x / sx, y / sy);
+	}
+	else
+	{
+		draw_color(COLOR_SURFACE2, 1.0);
+	}
+
 	cairo_paint(cr);
 	cairo_identity_matrix(cr);
 

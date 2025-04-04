@@ -1,3 +1,5 @@
 .vscode/
 backup/
 build/
+code/core/icon/
+code/wayland/protocol/

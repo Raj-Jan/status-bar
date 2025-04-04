@@ -14,22 +14,25 @@ static cairo_t* cr;
 extern PangoFontDescription* desc[2];
 static PangoLayout* font_layout;
 
-static void draw_fill(int color, double opacity)
+static void draw_color(int color, double opacity)
 {
 	cairo_set_source_rgba(
 		cr, colors[color + 0], colors[color + 1], colors[color + 2], opacity);
+}
+
+static void draw_fill(int color, double opacity)
+{
+	draw_color(color, opacity);
 	cairo_fill(cr);
 }
 static void draw_fill_preserve(int color, double opacity)
 {
-	cairo_set_source_rgba(
-		cr, colors[color + 0], colors[color + 1], colors[color + 2], opacity);
+	draw_color(color, opacity);
 	cairo_fill_preserve(cr);
 }
 static void draw_stroke(int color, double opacity, double s)
 {
-	cairo_set_source_rgba(
-		cr, colors[color + 0], colors[color + 1], colors[color + 2], opacity);
+	draw_color(color, opacity);
 	cairo_set_line_width(cr, s);
 	cairo_stroke(cr);
 }
@@ -79,8 +82,7 @@ static void draw_circle(double x, double y, double r)
 
 static void text_draw(int color, double opacity)
 {
-	cairo_set_source_rgba(
-		cr, colors[color + 0], colors[color + 1], colors[color + 2], opacity);
+	draw_color(color, opacity);
 	pango_cairo_show_layout(cr, font_layout);
 	cairo_new_path(cr);
 }
