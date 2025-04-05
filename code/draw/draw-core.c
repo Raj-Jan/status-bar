@@ -30,14 +30,15 @@ static void draw_button(double x)
 		COLOR_SAPPHIRE };
 	const int i = data_states.button_option;
 
-	draw_square(x, BUTTON_INNER_Y, BUTTON_WIDTH, BUTTON_HEIGHT, 0);
+	draw_square(x, BUTTON_INNER_Y, BUTTON_INNER_W, BUTTON_INNER_H, 0);
 	draw_fill(COLOR_SURFACE0, 1.0);
 
-	draw_round(x, BUTTON_INNER_Y, BUTTON_WIDTH, BUTTON_HEIGHT, 0, BUTTON_RADIUS);
+	draw_round(x, BUTTON_INNER_Y, BUTTON_INNER_W, BUTTON_INNER_H, 
+		0, BUTTON_RADIUS);
 	draw_fill(color[i], 1.0);
 
 	text_config(FONT_AWESOME, BUTTON_FONT, PANGO_WEIGHT_NORMAL);
-	text_center(x, BUTTON_INNER_Y, BUTTON_WIDTH, BUTTON_HEIGHT, str[i]);
+	text_center(x, BUTTON_INNER_Y, BUTTON_INNER_W, BUTTON_INNER_H, str[i]);
 	text_draw(COLOR_SURFACE0, 1.0);
 }
 static void draw_app(double x, int j)
@@ -398,8 +399,7 @@ int draw_core_frame()
 {
 	printf("frame-core\n");
 
-	if (is_dirty(ELEMENT_BUTTON_MENU)) draw_button(
-		MENU_POS + BUTTON_INNER_X);
+	if (is_dirty(ELEMENT_BUTTON_MENU)) draw_button(MENU_POS + BUTTON_INNER_X);
 
 	if (is_dirty(ELEMENT_APP0)) draw_app(APP_POS(0), 0);
 	if (is_dirty(ELEMENT_APP1)) draw_app(APP_POS(1), 1);
