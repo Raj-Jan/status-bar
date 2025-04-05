@@ -1,7 +1,7 @@
 #include "service-curl.h"
 #include "draw/draw-core.h"
-#include "utils/stb_image.h"
-#include "utils/stb_image_write.h"
+#include "stb/stb_image.h"
+#include "stb/stb_image_write.h"
 
 #include <stdlib.h>
 #include <string.h>

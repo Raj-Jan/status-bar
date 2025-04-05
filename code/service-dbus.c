@@ -507,6 +507,7 @@ void service_notify_dbus_prev()
 void service_notify_dbus_swap()
 {
 	send_dbus_method_call("PlayPause");
+	fetch_position();
 }
 void service_notify_dbus_sync()
 {

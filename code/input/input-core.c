@@ -114,14 +114,12 @@ static void handle_button_apps(double x, double y)
 
 	if (i != j) return;
 
-	const uint64_t address = data_tray.address[i];
-
 	int workspace = -1;
 	for (int k = 0; k < data_hyprland.window_total; k++)
 	{
-		if (data_hyprland.window_address[k] == address)
+		if (data_hyprland.window_params[k].app == i)
 		{
-			workspace = data_hyprland.window_workspace[k];
+			workspace = data_hyprland.window_params[k].workspace;
 			break;
 		}
 	}

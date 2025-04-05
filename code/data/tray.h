@@ -2,6 +2,6 @@
 
 extern struct tray_t
 {
-	uint64_t address[8];
+	uint8_t window_count[8];
 
 } data_tray;

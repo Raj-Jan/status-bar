@@ -50,9 +50,48 @@ static long string_application(const char* name)
 	if (string_cmp(name, "Spotify")) return 4;
 	if (string_cmp(name, "blender")) return 5;
 	if (string_cmp(name, "krita")) return 6;
-	if (string_cmp(name, "osu!")) return 07;
+	if (string_cmp(name, "osu!")) return 7;
 
-	return -1;
+	return 8;
+}
+
+static void app_increment(int i)
+{
+	if (i < 8 && data_tray.window_count[i]++ == 0)
+	{
+		data_states.dirty_core |= (1ul << (ELEMENT_APP0 + i));
+	}
+}
+static void app_decrement(int i)
+{
+	if (i < 8 && --data_tray.window_count[i] == 0)
+	{
+		data_states.dirty_core |= (1ul << (ELEMENT_APP0 + i));
+	}
+}
+
+static void window_open(uint64_t addr, uint8_t app, uint8_t index)
+{
+	const uint8_t i = data_hyprland.window_total++;
+
+	data_hyprland.window_address[i] = addr;
+	data_hyprland.window_params[i].app = app;
+	data_hyprland.window_params[i].workspace = index;
+
+	app_increment(app);
+}
+static void window_close(uint8_t i)
+{
+	app_decrement(data_hyprland.window_params[i].app);
+
+	const uint8_t j = --data_hyprland.window_total;
+
+	data_hyprland.window_params[i] = data_hyprland.window_params[j];
+	data_hyprland.window_address[i] = data_hyprland.window_address[j];
+}
+static void window_move(uint8_t i, uint8_t index)
+{
+	data_hyprland.window_params[i].workspace = index;
 }
 
 static int hyprland_connect(const char* path)
@@ -113,18 +152,7 @@ static void hyprland_openwindow(const char* ptr, const char* end)
 	while (*ptr++ != ',');
 	const long app = string_application(ptr);
 
-	if (app >= 0 && data_tray.address[app] == 0)
-	{
-		data_tray.address[app] = addr;
-
-		data_states.dirty_core |= (1ul << (ELEMENT_APP0 + app));
-	}
-
-	data_hyprland.window_address[data_hyprland.window_total] = addr;
-	data_hyprland.window_workspace[data_hyprland.window_total] = index;
-
-	data_hyprland.window_total++;
-
+	window_open(addr, app, index);
 	hyprland_open(index);
 }
 static void hyprland_closewindow(const char* ptr, const char* end)
@@ -132,28 +160,12 @@ static void hyprland_closewindow(const char* ptr, const char* end)
 	while (*ptr++ != '>');
 	const long addr = string_hex(ptr + 1, end);
 
-	for (int i = 0; i < 8; i++)
-	{
-		if (data_tray.address[i] == addr)
-		{
-			data_tray.address[i] = 0;
-			
-			data_states.dirty_core |= (1ul << (ELEMENT_APP0 + i));
-		}
-	}
-
 	for (int i = 0; i < data_hyprland.window_total; i++)
 	{
 		if (data_hyprland.window_address[i] == addr)
 		{
-			hyprland_close(data_hyprland.window_workspace[i]);
-
-			--data_hyprland.window_total;
-
-			data_hyprland.window_workspace[i] =
-				data_hyprland.window_workspace[data_hyprland.window_total];
-			data_hyprland.window_address[i] =
-				data_hyprland.window_address[data_hyprland.window_total];
+			hyprland_close(data_hyprland.window_params[i].workspace);
+			window_close(i);
 			return;
 		}
 	}
@@ -170,10 +182,9 @@ static void hyprland_movewindow(const char* ptr, const char* end)
 	{
 		if (data_hyprland.window_address[i] == addr)
 		{
-			hyprland_close(data_hyprland.window_workspace[i]);
+			hyprland_close(data_hyprland.window_params[i].workspace);
 			hyprland_open(index);
-
-			data_hyprland.window_workspace[i] = index;
+			window_move(i, index);
 			return;
 		}
 	}
@@ -192,7 +203,6 @@ static void hyprland_activeworkspace()
 	const long i = string_dec(str + sizeof("workspace ID ") - 1, end);
 
 	data_hyprland.workspace_active = i;
-
 	data_states.dirty_core |= (1 << i);
 }
 static void hyprland_clients()
@@ -215,17 +225,7 @@ static void hyprland_clients()
 		while (*str++ != '\n');
 		while (*str++ != '\n');
 
-		const long workspace = string_dec(str + sizeof("\tworkspace: ") - 1, end);
-
-		data_hyprland.window_address[data_hyprland.window_total] = addr;
-		data_hyprland.window_workspace[data_hyprland.window_total] = workspace;
-		data_hyprland.window_total++;
-
-		if (workspace >= 0)
-		{
-			data_hyprland.workspace_count[workspace]++;
-			data_states.dirty_core |= (1 << workspace);
-		}
+		const long index = string_dec(str + sizeof("\tworkspace: ") - 1, end);
 
 		while (*str++ != '\n');
 		while (*str++ != '\n');
@@ -233,9 +233,13 @@ static void hyprland_clients()
 		while (*str++ != '\n');
 
 		const char* name = str + sizeof("\tclass: ") - 1;
-
 		const long app = string_application(name);
-		if (app >= 0) data_tray.address[app] = addr;
+
+		if (index >= 0 && index <= 9)
+		{
+			window_open(addr, app, index);
+			hyprland_open(index);
+		}
 
 		for (int i = 0; i < 15; i++) while (*str++ != '\n');
 	}

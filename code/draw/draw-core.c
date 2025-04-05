@@ -47,9 +47,8 @@ static void draw_app(double x, int j)
 	draw_square(x, y, APP_INNER_W, APP_INNER_H, 0);
 	draw_fill(COLOR_SURFACE0, 1.0);
 
-	int color;
-	if (data_tray.address[j] == 0) color = COLOR_OVERLAY0;
-	if (data_tray.address[j] != 0) color = COLOR_FLAMINGO;
+	const int color = (data_tray.window_count[j] == 0)
+		? COLOR_OVERLAY0 : COLOR_FLAMINGO;
 
 	cairo_set_source_rgba(
 		cr, colors[color + 0], colors[color + 1], colors[color + 2], 1.0);
@@ -70,7 +69,8 @@ static void draw_workspace(double x, int j)
 
 	if (b1) draw_fill_preserve(COLOR_PEACH, 1.0);
 
-	draw_stroke((b1 || !b2) ? COLOR_FLAMINGO : COLOR_SURFACE2, 1.0, WORKSPACE_STROKE);
+	const int color = (b1 || !b2) ? COLOR_FLAMINGO : COLOR_SURFACE2;
+	draw_stroke(color, 1.0, WORKSPACE_STROKE);
 }
 static void draw_time(double x)
 {
