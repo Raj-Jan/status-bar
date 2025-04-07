@@ -28,8 +28,6 @@ static void launch_application(const char *app_path)
 
     pid_t pid2 = fork();
     
-    pid_t pid2 = fork();
-    
     if (pid2 < 0) exit(EXIT_FAILURE);
     if (pid2 > 0) exit(EXIT_SUCCESS);
     
