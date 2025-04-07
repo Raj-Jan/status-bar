@@ -21,9 +21,12 @@
 
 static void launch_application(const char *app_path)
 {
-    pid_t pid = fork();
+    pid_t pid1 = fork();
     
-    if (pid != 0) return;
+	if (pid1 < 0) return;
+	if (pid1 > 0) return (void)waitpid(pid1, 0, 0);
+
+    pid_t pid2 = fork();
     
     pid_t pid2 = fork();
     
