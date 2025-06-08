@@ -397,8 +397,6 @@ int draw_core_setup(void* data)
 }
 int draw_core_frame()
 {
-	printf("frame-core\n");
-
 	if (is_dirty(ELEMENT_BUTTON_MENU)) draw_button(MENU_POS + BUTTON_INNER_X);
 
 	if (is_dirty(ELEMENT_APP0)) draw_app(APP_POS(0), 0);

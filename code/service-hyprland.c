@@ -215,24 +215,38 @@ static void hyprland_clients()
 	const char* str = buffer;
 	const char* end = buffer + read(socket, buffer, sizeof(buffer));
 
+	const char str_window[] = "Window ";
+	const char str_name[] = "\tclass: ";
+	const char str_workspace[] = "\tworkspace: ";
+
 	while (str < end)
 	{
+		const char str_window[] = "Window ";
+		const char str_name[] = "\tclass: ";
+		const char str_workspace[] = "\tworkspace: ";
+
 		const long addr = string_hex(str + sizeof("Window ") - 1, end);
 
-		while (*str++ != '\n');
-		while (*str++ != '\n');
-		while (*str++ != '\n');
-		while (*str++ != '\n');
-		while (*str++ != '\n');
+		long index;
+		const char* name;
 
-		const long index = string_dec(str + sizeof("\tworkspace: ") - 1, end);
+		while (str < end)
+		{
+			while (*str++ != '\n');
+			if (string_cmp(str, str_workspace))
+			{
+				index = string_dec(str + sizeof(str_workspace) - 1, end);
+			}
+			if (string_cmp(str, str_name))
+			{
+				name = str + sizeof("\tclass: ") - 1;
+			}
+			if (string_cmp(str, str_window))
+			{
+				break;
+			}
+		}
 
-		while (*str++ != '\n');
-		while (*str++ != '\n');
-		while (*str++ != '\n');
-		while (*str++ != '\n');
-
-		const char* name = str + sizeof("\tclass: ") - 1;
 		const long app = string_application(name);
 
 		if (index >= 0 && index <= 9)
@@ -240,8 +254,6 @@ static void hyprland_clients()
 			window_open(addr, app, index);
 			hyprland_open(index);
 		}
-
-		for (int i = 0; i < 15; i++) while (*str++ != '\n');
 	}
 
 	close(socket);

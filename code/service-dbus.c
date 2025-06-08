@@ -14,104 +14,115 @@ static DBusConnection* conn;
 
 static void send_dbus_method_call(const char* method)
 {
-    DBusMessage* msg;
-    DBusMessage* reply;
-    DBusError err;
-    dbus_error_init(&err);
+	DBusMessage* msg;
+	DBusMessage* reply;
+	DBusError err;
+	dbus_error_init(&err);
 
-    msg = dbus_message_new_method_call(
-        "org.mpris.MediaPlayer2.spotify",       // Destination service (Spotify)
-        "/org/mpris/MediaPlayer2",              // Object path
-        "org.mpris.MediaPlayer2.Player",        // Interface
-        method                                  // Method name (Play, Pause, Next, Previous)
-    );
+	msg = dbus_message_new_method_call(
+		"org.mpris.MediaPlayer2.spotify",	   // Destination service (Spotify)
+		"/org/mpris/MediaPlayer2",			  // Object path
+		"org.mpris.MediaPlayer2.Player",		// Interface
+		method								  // Method name (Play, Pause, Next, Previous)
+	);
 
-    if (!msg) 
+	if (!msg) 
 	{
-        fprintf(stderr, "Failed to create message!\n");
-        return;
-    }
+		fprintf(stderr, "Failed to create message!\n");
+		return;
+	}
 
-    reply = dbus_connection_send_with_reply_and_block(conn, msg, 1000, &err);
-    dbus_message_unref(msg);
+	reply = dbus_connection_send_with_reply_and_block(conn, msg, 1000, &err);
+	dbus_message_unref(msg);
 
-    if (!reply)
+	if (!reply)
 	{
-        fprintf(stderr, "DBus Error: %s\n", err.message);
-        dbus_error_free(&err);
-        return;
-    }
+		fprintf(stderr, "DBus Error: %s\n", err.message);
+		dbus_error_free(&err);
+		return;
+	}
 
-    dbus_message_unref(reply);
+	dbus_message_unref(reply);
 }
 static void send_system_method_call(DBusMessage *msg)
 {
-    if (!msg)
+	if (!msg)
 	{
-        fprintf(stderr, "Failed to create D-Bus message\n");
-        return;
-    }
+		fprintf(stderr, "Failed to create D-Bus message\n");
+		return;
+	}
 
 	DBusConnection *conn;
-    DBusMessage *reply;
-    DBusError err;
-    DBusPendingCall *pending;
-    int32_t response_code; // If the reply has an integer response
+	DBusMessage *reply;
+	DBusError err;
+	DBusPendingCall *pending;
+	int32_t response_code; // If the reply has an integer response
 
-    // Initialize the error
-    dbus_error_init(&err);
+	// Initialize the error
+	dbus_error_init(&err);
 
-    // Connect to the system bus
-    conn = dbus_bus_get(DBUS_BUS_SYSTEM, &err);
-    if (!conn) {
-        fprintf(stderr, "Failed to connect to the D-Bus system bus: %s\n", err.message);
-        dbus_error_free(&err);
-        return;
-    }
+	// Connect to the system bus
+	conn = dbus_bus_get(DBUS_BUS_SYSTEM, &err);
+	if (!conn)
+	{
+		fprintf(stderr, "Failed to connect to the D-Bus system bus: %s\n", err.message);
+		dbus_error_free(&err);
+		return;
+	}
 
-    // Send the message and wait for a reply
-    if (!dbus_connection_send_with_reply(conn, msg, &pending, -1)) {
-        fprintf(stderr, "Failed to send D-Bus message\n");
-        dbus_message_unref(msg);
-        return;
-    }
+	// Send the message and wait for a reply
+	if (!dbus_connection_send_with_reply(conn, msg, &pending, -1))
+	{
+		fprintf(stderr, "Failed to send D-Bus message\n");
+		dbus_message_unref(msg);
+		return;
+	}
 
-    if (!pending) {
-        fprintf(stderr, "Failed to create pending call\n");
-        dbus_message_unref(msg);
-        return;
-    }
+	if (!pending)
+	{
+		fprintf(stderr, "Failed to create pending call\n");
+		dbus_message_unref(msg);
+		return;
+	}
 
-    dbus_connection_flush(conn);
-    dbus_message_unref(msg);
+	dbus_connection_flush(conn);
+	dbus_message_unref(msg);
 
-    // Block until we receive a reply
-    dbus_pending_call_block(pending);
-    reply = dbus_pending_call_steal_reply(pending);
-    dbus_pending_call_unref(pending);
+	dbus_pending_call_block(pending);
+	reply = dbus_pending_call_steal_reply(pending);
+	dbus_pending_call_unref(pending);
 
-    if (!reply) {
-        fprintf(stderr, "No reply received\n");
-        return;
-    }
+	if (!reply)
+	{
+		fprintf(stderr, "No reply received\n");
+		return;
+	}
 
-    // Check if there's an error in the reply
-    if (dbus_message_get_type(reply) == DBUS_MESSAGE_TYPE_ERROR) {
-        const char *error_name = dbus_message_get_error_name(reply);
-        fprintf(stderr, "D-Bus error: %s\n", error_name);
-    } else {
-        // Try reading an integer response (if applicable)
-        if (dbus_message_get_args(reply, &err, DBUS_TYPE_INT32, &response_code, DBUS_TYPE_INVALID)) {
-            printf("Received response code: %d\n", response_code);
-        } else if (dbus_error_is_set(&err)) {
-            fprintf(stderr, "Error parsing response: %s\n", err.message);
-            dbus_error_free(&err);
-        } else {
-            printf("D-Bus call executed successfully, but no response data.\n");
-        }
-    }
+	if (dbus_message_get_type(reply) == DBUS_MESSAGE_TYPE_ERROR)
+	{
+		const char *error_name = dbus_message_get_error_name(reply);
+		fprintf(stderr, "D-Bus error: %s\n", error_name);
+	}
+	else
+	{
+		// Try reading an integer response (if applicable)
+		if (dbus_message_get_args(reply, &err, DBUS_TYPE_INT32, &response_code, DBUS_TYPE_INVALID))
+		{
+			printf("Received response code: %d\n", response_code);
+		}
+		else if (dbus_error_is_set(&err))
+		{
+			fprintf(stderr, "Error parsing response: %s\n", err.message);
+			dbus_error_free(&err);
+		}
+		else
+		{
+			printf("D-Bus call executed successfully, but no response data.\n");
+		}
+	}
 
-    dbus_message_unref(reply);
+	dbus_message_unref(reply);
+	exit(0);
 }
 
 static int save_artist(int i, const char* artist)
@@ -490,7 +501,6 @@ int service_update_dbus(int fd, char* buffer, int length)
 			"org.freedesktop.DBus.Properties", "PropertiesChanged"))
 		{
 			handle_dbus_message(msg);
-			printf("Spotify event detected!\n");
 		}
 		dbus_message_unref(msg);
 	}
@@ -517,13 +527,13 @@ void service_notify_dbus_sync()
 void service_notify_dbus_shutdown()
 {
 	DBusMessage* msg = dbus_message_new_method_call(
-        "org.freedesktop.login1",
-        "/org/freedesktop/login1",
-        "org.freedesktop.login1.Manager",
-        "PowerOff");
+		"org.freedesktop.login1",
+		"/org/freedesktop/login1",
+		"org.freedesktop.login1.Manager",
+		"PowerOff");
 
-    dbus_bool_t dont_force = 0;
-    dbus_message_append_args(msg,
+	dbus_bool_t dont_force = 0;
+	dbus_message_append_args(msg,
 		DBUS_TYPE_BOOLEAN, &dont_force,
 		DBUS_TYPE_INVALID);
 
@@ -562,10 +572,10 @@ void service_notify_dbus_hibernate()
 void service_notify_dbus_firmware()
 {
 	DBusMessage* msg = dbus_message_new_method_call(
-        "org.freedesktop.login1",
-        "/org/freedesktop/login1",
-        "org.freedesktop.login1.Manager",
-        "RebootWithFlags");
+		"org.freedesktop.login1",
+		"/org/freedesktop/login1",
+		"org.freedesktop.login1.Manager",
+		"RebootWithFlags");
 
 	dbus_bool_t dont_force = 0;
 	uint64_t firmware_flag = 1;

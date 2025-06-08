@@ -93,12 +93,6 @@ static void clock_update(uint64_t num)
 	data_clock.time_second = second % 60;
 	data_clock.time_minute = minute;
 
-	printf("%ld current time: %.2d:%.2d:%.2d\n", 
-		num,
-		data_clock.time_hour,
-		data_clock.time_minute,
-		data_clock.time_second);
-
 	data_states.dirty_core |= (1ul << ELEMENT_CLOCK_TIME);
 
 	if (second < 60) return;
