@@ -108,6 +108,8 @@ def convert_image_to_c_array(input_image, output_file):
 
 	# Write to output file
 	with open(output_file, "w") as f:
+		f.write(f"#define icon_{var_name}_w {width}\n")
+		f.write(f"#define icon_{var_name}_h {height}\n")
 		f.write(f"const unsigned char icon_{var_name}_data[] = {{ {c_array} }};\n")
 
 	print(f"Conversion complete! Data saved to {output_file}")

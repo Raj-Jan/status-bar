@@ -7,6 +7,7 @@
 #include "data/player.h"
 #include "data/system.h"
 #include "data/tray.h"
+
 #include "icon/blender.h"
 #include "icon/discord.h"
 #include "icon/firefox.h"
@@ -16,12 +17,32 @@
 #include "icon/steam.h"
 #include "icon/vscode.h"
 
-static cairo_surface_t* icon[8];
+#include "icon/bolt.h"
+#include "icon/power-off.h"
+#include "icon/rotate-left.h"
+#include "icon/gear.h"
+#include "icon/moon.h"
+
+#include "icon/backward.h"
+#include "icon/forward.h"
+#include "icon/pause.h"
+#include "icon/play.h"
+
+#include "icon/microchip.h"
+#include "icon/graphics.h"
+#include "icon/layers.h"
+#include "icon/cubes.h"
+#include "icon/house.h"
+
+static cairo_surface_t* icon_app[8];
+static cairo_surface_t* icon_pwr[5];
+static cairo_surface_t* icon_player[4];
+static cairo_surface_t* icon_meter[5];
 static cairo_surface_t* image;
 
 static void draw_button(double x)
 {
-	const char str[][4] = { "", "", "", "", "" };
+	// const char str[][4] = { "", "", "", "", "" };
 	const int color[] = {
 		COLOR_FLAMINGO,
 		COLOR_RED,
@@ -30,16 +51,22 @@ static void draw_button(double x)
 		COLOR_SAPPHIRE };
 	const int i = data_states.button_option;
 
-	draw_square(x, BUTTON_INNER_Y, BUTTON_INNER_W, BUTTON_INNER_H, 0);
+	double y = BUTTON_INNER_Y;
+	draw_square(x, y, BUTTON_INNER_W, BUTTON_INNER_H, 0);
 	draw_fill(COLOR_SURFACE0, 1.0);
 
-	draw_round(x, BUTTON_INNER_Y, BUTTON_INNER_W, BUTTON_INNER_H, 
-		0, BUTTON_RADIUS);
+	draw_round(x, y, BUTTON_INNER_W, BUTTON_INNER_H, 
+	 	0, BUTTON_RADIUS);
 	draw_fill(color[i], 1.0);
 
-	text_config(FONT_AWESOME, BUTTON_FONT, PANGO_WEIGHT_NORMAL);
-	text_center(x, BUTTON_INNER_Y, BUTTON_INNER_W, BUTTON_INNER_H, str[i]);
-	text_draw(COLOR_SURFACE0, 1.0);
+	const double w[] = {
+		icon_bolt_w, icon_power_off_w, icon_rotate_left_w, icon_moon_w, icon_gear_w };
+	const double h[] = {
+		icon_bolt_h, icon_power_off_h, icon_rotate_left_h, icon_moon_h, icon_gear_h };
+
+	draw_icon(COLOR_SURFACE0, icon_pwr[i],
+		x + BUTTON_INNER_W / 2 - w[i] / 2,
+		y + BUTTON_INNER_H / 2 - h[i] / 2);
 }
 static void draw_app(double x, int j)
 {
@@ -53,7 +80,7 @@ static void draw_app(double x, int j)
 
 	cairo_set_source_rgba(
 		cr, colors[color + 0], colors[color + 1], colors[color + 2], 1.0);
-	cairo_mask_surface(cr, icon[j], x, y);
+	cairo_mask_surface(cr, icon_app[j], x, y);
 }
 static void draw_workspace(double x, int j)
 {
@@ -88,7 +115,7 @@ static void draw_time(double x)
 	draw_square(x, y, CLOCK_TIME_LENGTH + 1, CLOCK_TIME_SIZE, 0);
 	draw_fill(COLOR_SURFACE0, 1.0);
 
-	text_config(FONT_AWESOME, CLOCK_TIME_SIZE, PANGO_WEIGHT_SEMIBOLD);
+	text_config(CLOCK_TIME_SIZE, PANGO_WEIGHT_SEMIBOLD);
 	text_right(x, y, CLOCK_TIME_LENGTH, CLOCK_TIME_SIZE, text_time);
 	text_draw(COLOR_PEACH, 1.0);
 }
@@ -120,15 +147,15 @@ static void draw_date(double x)
 	draw_square(x, y, CLOCK_DATE_LENGTH + 1, CLOCK_DATE_SIZE + 2, 0);
 	draw_fill(COLOR_SURFACE0, 1.0);
 
-	text_config(FONT_SANS, CLOCK_DATE_SIZE, PANGO_WEIGHT_MEDIUM);
+	text_config(CLOCK_DATE_SIZE, PANGO_WEIGHT_MEDIUM);
 	text_right(x, y, CLOCK_DATE_LENGTH, CLOCK_DATE_SIZE, text_date);
 	text_draw(COLOR_PEACH, 1.0);
 }
-static void draw_meter_icon(double x, int j, const char* str)
+static void draw_meter_icon(double x, int j, cairo_surface_t* icon, double w, double h)
 {
-	text_config(FONT_AWESOME, METER_ICON_SIZE, PANGO_WEIGHT_NORMAL);
-	text_center(x, 0, METER_ICON_SIZE, WINDOW_HEIGHT, str);
-	text_draw(j, 1.0);
+	draw_icon(j, icon,
+		x + METER_ICON_SIZE / 2 - w / 2,
+		0 + WINDOW_HEIGHT / 2 - h / 2);
 }
 static void draw_meter_fill(double x, double ratio)
 {
@@ -166,7 +193,7 @@ static void draw_meter_fill(double x, double ratio)
 		str[2] = '\0';
 	}
 
-	text_config(FONT_AWESOME, METER_FILL_FONT, PANGO_WEIGHT_ULTRAHEAVY);
+	text_config(METER_FILL_FONT, PANGO_WEIGHT_BOLD);
 	text_center(x, y, METER_FILL_SIZE, METER_FILL_SIZE, str);
 	text_draw(COLOR_PEACH, 1.0);
 }
@@ -177,7 +204,7 @@ static void draw_meter_text(double x, int j, double w, const char* str)
 	draw_square(x, y, w + 1, METER_TEXT_SIZE, 0);
 	draw_fill(COLOR_SURFACE0, 1.0);
 
-	text_config(FONT_AWESOME, METER_TEXT_SIZE, PANGO_WEIGHT_ULTRAHEAVY);
+	text_config(METER_TEXT_SIZE, PANGO_WEIGHT_SEMIBOLD);
 	text_left(x, 0, w, WINDOW_HEIGHT, str);
 	text_draw(j, 1.0);
 }
@@ -278,7 +305,7 @@ static void draw_player_text(double x)
 
 	const char* str = data_player.text;
 
-	text_config(FONT_SANS, PLAYER_TEXT_SIZE, PANGO_WEIGHT_MEDIUM);
+	text_config(PLAYER_TEXT_SIZE, PANGO_WEIGHT_MEDIUM);
 	text_shorten(PLAYER_TEXT_W);
 	text_left(x, PLAYER_TEXT_Y, PLAYER_TEXT_W, PLAYER_TEXT_SIZE, str);
 	text_draw(COLOR_PEACH, 1.0);
@@ -305,7 +332,7 @@ static void draw_player_bar(double x)
 	draw_round(x, PLAYER_BAR_Y, p * PLAYER_BAR_W, PLAYER_BAR_H, 0, PLAYER_BAR_HEIGHT / 2.0);
 	draw_fill(COLOR_PEACH, 1.0);
 }
-static void draw_player_button(double x, const char* str)
+static void draw_player_button(double x, cairo_surface_t* icon, double w, double h)
 {
 	double y = WINDOW_HEIGHT - PLAYER_BUTTON_OFFSET - PLAYER_BUTTON_H;
 	
@@ -315,13 +342,20 @@ static void draw_player_button(double x, const char* str)
 	draw_round(x, y, PLAYER_BUTTON_W, PLAYER_BUTTON_H, 0, PLAYER_BUTTON_RADIUS);
 	draw_fill(COLOR_FLAMINGO, 1.0);
 
-	text_config(FONT_AWESOME, PLAYER_TAG_SIZE, PANGO_WEIGHT_NORMAL);
-	text_center(x, y, PLAYER_BUTTON_W, PLAYER_BUTTON_H, str);
-	text_draw(COLOR_SURFACE0, 1.0);
+	draw_icon(COLOR_SURFACE0, icon,
+		x + PLAYER_BUTTON_W / 2 - w / 2,
+		y + PLAYER_BUTTON_H / 2 - h / 2);
 }
 static void draw_player_playbutton(double x)
 {
-	draw_player_button(x, data_player.is_playing ? "" : "");
+	if (data_player.is_playing)
+	{
+		draw_player_button(x, icon_player[2], icon_pause_w, icon_pause_h);
+	}
+	else
+	{
+		draw_player_button(x, icon_player[3], icon_play_w, icon_play_h);
+	}
 }
 
 static long is_dirty(uint64_t index)
@@ -334,62 +368,66 @@ static long is_dirty(uint64_t index)
 	return 0;
 }
 
+#define icon_from_data(name) \
+	(unsigned char*)icon_##name##_data,\
+	CAIRO_FORMAT_ARGB32,\
+	icon_##name##_w,\
+	icon_##name##_h,\
+	icon_##name##_w * 4
+
 int draw_core_setup(void* data)
 {
 	surface = cairo_image_surface_create_for_data(
 		data, CAIRO_FORMAT_ARGB32, WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH * 4);
 	cr = cairo_create(surface);
 
-	desc[FONT_SANS] = pango_font_description_from_string("Sans");
-	desc[FONT_AWESOME] = pango_font_description_from_string(
-		"Font Awesome 6 Free Solid");
+	font_desc = pango_font_description_from_string("Sans");
 	font_layout = pango_cairo_create_layout(cr);
 
-	icon[0] = cairo_image_surface_create_for_data((unsigned char*)icon_vscode_data, 
-		CAIRO_FORMAT_ARGB32, APP_SIZE, APP_SIZE, APP_SIZE * 4);
-	icon[1] = cairo_image_surface_create_for_data((unsigned char*)icon_firefox_data, 
-		CAIRO_FORMAT_ARGB32, APP_SIZE, APP_SIZE, APP_SIZE * 4);
-	icon[2] = cairo_image_surface_create_for_data((unsigned char*)icon_discord_data, 
-		CAIRO_FORMAT_ARGB32, APP_SIZE, APP_SIZE, APP_SIZE * 4);
-	icon[3] = cairo_image_surface_create_for_data((unsigned char*)icon_steam_data, 
-		CAIRO_FORMAT_ARGB32, APP_SIZE, APP_SIZE, APP_SIZE * 4);
-	icon[4] = cairo_image_surface_create_for_data((unsigned char*)icon_spotify_data, 
-		CAIRO_FORMAT_ARGB32, APP_SIZE, APP_SIZE, APP_SIZE * 4);
-	icon[5] = cairo_image_surface_create_for_data((unsigned char*)icon_blender_data, 
-		CAIRO_FORMAT_ARGB32, APP_SIZE, APP_SIZE, APP_SIZE * 4);
-	icon[6] = cairo_image_surface_create_for_data((unsigned char*)icon_krita_data, 
-		CAIRO_FORMAT_ARGB32, APP_SIZE, APP_SIZE, APP_SIZE * 4);
-	icon[7] = cairo_image_surface_create_for_data((unsigned char*)icon_osu_data, 
-		CAIRO_FORMAT_ARGB32, APP_SIZE, APP_SIZE, APP_SIZE * 4);
+	icon_app[0] = cairo_image_surface_create_for_data(icon_from_data(vscode));
+	icon_app[1] = cairo_image_surface_create_for_data(icon_from_data(firefox));
+	icon_app[2] = cairo_image_surface_create_for_data(icon_from_data(discord));
+	icon_app[3] = cairo_image_surface_create_for_data(icon_from_data(steam));
+	icon_app[4] = cairo_image_surface_create_for_data(icon_from_data(spotify));
+	icon_app[5] = cairo_image_surface_create_for_data(icon_from_data(blender));
+	icon_app[6] = cairo_image_surface_create_for_data(icon_from_data(krita));
+	icon_app[7] = cairo_image_surface_create_for_data(icon_from_data(osu));
 
-	// icon[0] = cairo_image_surface_create_for_data((unsigned char*)icon_vscode_data, 
-	// 	CAIRO_FORMAT_A8, APP_SIZE, APP_SIZE, APP_SIZE);
-	// icon[1] = cairo_image_surface_create_for_data((unsigned char*)icon_firefox_data, 
-	// 	CAIRO_FORMAT_A8, APP_SIZE, APP_SIZE, APP_SIZE);
-	// icon[2] = cairo_image_surface_create_for_data((unsigned char*)icon_discord_data, 
-	// 	CAIRO_FORMAT_A8, APP_SIZE, APP_SIZE, APP_SIZE);
-	// icon[3] = cairo_image_surface_create_for_data((unsigned char*)icon_steam_data, 
-	// 	CAIRO_FORMAT_A8, APP_SIZE, APP_SIZE, APP_SIZE);
-	// icon[4] = cairo_image_surface_create_for_data((unsigned char*)icon_spotify_data, 
-	// 	CAIRO_FORMAT_A8, APP_SIZE, APP_SIZE, APP_SIZE);
-	// icon[5] = cairo_image_surface_create_for_data((unsigned char*)icon_blender_data, 
-	// 	CAIRO_FORMAT_A8, APP_SIZE, APP_SIZE, APP_SIZE);
-	// icon[6] = cairo_image_surface_create_for_data((unsigned char*)icon_krita_data, 
-	// 	CAIRO_FORMAT_A8, APP_SIZE, APP_SIZE, APP_SIZE);
-	// icon[7] = cairo_image_surface_create_for_data((unsigned char*)icon_osu_data, 
-	// 	CAIRO_FORMAT_A8, APP_SIZE, APP_SIZE, APP_SIZE);
+	icon_pwr[0] = cairo_image_surface_create_for_data(icon_from_data(bolt));
+	icon_pwr[1] = cairo_image_surface_create_for_data(icon_from_data(power_off));
+	icon_pwr[2] = cairo_image_surface_create_for_data(icon_from_data(rotate_left));
+	icon_pwr[3] = cairo_image_surface_create_for_data(icon_from_data(moon));
+	icon_pwr[4] = cairo_image_surface_create_for_data(icon_from_data(gear));
+
+	icon_player[0] = cairo_image_surface_create_for_data(icon_from_data(backward));
+	icon_player[1] = cairo_image_surface_create_for_data(icon_from_data(forward));
+	icon_player[2] = cairo_image_surface_create_for_data(icon_from_data(pause));
+	icon_player[3] = cairo_image_surface_create_for_data(icon_from_data(play));
+
+	icon_meter[0] = cairo_image_surface_create_for_data(icon_from_data(graphics));
+	icon_meter[1] = cairo_image_surface_create_for_data(icon_from_data(microchip));
+	icon_meter[2] = cairo_image_surface_create_for_data(icon_from_data(layers));
+	icon_meter[3] = cairo_image_surface_create_for_data(icon_from_data(cubes));
+	icon_meter[4] = cairo_image_surface_create_for_data(icon_from_data(house));
 
 	draw_round(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, WINDOW_RADIUS);
 	draw_fill(COLOR_SURFACE0, 1.0);
 
-	draw_meter_icon(METER0_POS + METER_ICON_X, COLOR_FLAMINGO, "");
-	draw_meter_icon(METER1_POS + METER_ICON_X, COLOR_FLAMINGO, "");
-	draw_meter_icon(METER2_POS + METER_ICON_X, COLOR_MAROON, "");
-	draw_meter_icon(METER3_POS + METER_ICON_X, COLOR_ROSEWAWTER, "");
-	draw_meter_icon(METER4_POS + METER_ICON_X, COLOR_ROSEWAWTER, "");
+	draw_meter_icon(METER0_POS + METER_ICON_X, COLOR_FLAMINGO, icon_meter[0],
+		icon_microchip_w, icon_microchip_h);
+	draw_meter_icon(METER1_POS + METER_ICON_X, COLOR_FLAMINGO, icon_meter[1],
+		icon_graphics_w, icon_graphics_h);
+	draw_meter_icon(METER2_POS + METER_ICON_X, COLOR_MAROON, icon_meter[2],
+		icon_layers_w, icon_layers_h);
+	draw_meter_icon(METER3_POS + METER_ICON_X, COLOR_MAROON, icon_meter[3],
+		icon_cubes_w, icon_cubes_h);
+	draw_meter_icon(METER4_POS + METER_ICON_X, COLOR_MAROON, icon_meter[4],
+		icon_house_w, icon_house_h);
 
-	draw_player_button(PLAYER_BUTTON_POS(0) + PLAYER_BUTTON_X, "");
-	draw_player_button(PLAYER_BUTTON_POS(2) + PLAYER_BUTTON_X, "");
+	draw_player_button(PLAYER_BUTTON_POS(0) + PLAYER_BUTTON_X,
+		icon_player[0], icon_backward_w, icon_backward_h);
+	draw_player_button(PLAYER_BUTTON_POS(2) + PLAYER_BUTTON_X,
+		icon_player[1], icon_forward_w, icon_forward_h);
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_ATOP);
 

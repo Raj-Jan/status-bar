@@ -1,3 +1,3 @@
 #include "draw.h"
 
-PangoFontDescription* desc[2];
+PangoFontDescription* font_desc;

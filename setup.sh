@@ -30,3 +30,20 @@ python convert_icon.py icon/spotify.png $o/spotify.h
 python convert_icon.py icon/blender.png $o/blender.h
 python convert_icon.py icon/krita.png $o/krita.h
 python convert_icon.py icon/osu.png $o/osu.h
+
+python convert_icon.py icon/bolt.png $o/bolt.h
+python convert_icon.py icon/power-off.png $o/power-off.h
+python convert_icon.py icon/rotate-left.png $o/rotate-left.h
+python convert_icon.py icon/gear.png $o/gear.h
+python convert_icon.py icon/moon.png $o/moon.h
+
+python convert_icon.py icon/backward.png $o/backward.h
+python convert_icon.py icon/forward.png $o/forward.h
+python convert_icon.py icon/pause.png $o/pause.h
+python convert_icon.py icon/play.png $o/play.h
+
+python convert_icon.py icon/microchip.png $o/microchip.h
+python convert_icon.py icon/graphics.png $o/graphics.h
+python convert_icon.py icon/layers.png $o/layers.h
+python convert_icon.py icon/cubes.png $o/cubes.h
+python convert_icon.py icon/house.png $o/house.h

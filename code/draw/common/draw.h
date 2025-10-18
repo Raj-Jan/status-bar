@@ -6,12 +6,10 @@
 #define HALF_PI 1.57079632679
 #define TWO_PI 6.28318530718
 
-enum font_t { FONT_SANS, FONT_AWESOME };
-
 static cairo_surface_t* surface;
 static cairo_t* cr;
 
-extern PangoFontDescription* desc[2];
+extern PangoFontDescription* font_desc;
 static PangoLayout* font_layout;
 
 static void draw_color(int color, double opacity)
@@ -86,11 +84,11 @@ static void text_draw(int color, double opacity)
 	pango_cairo_show_layout(cr, font_layout);
 	cairo_new_path(cr);
 }
-static void text_config(int i, double size, PangoWeight weight)
+static void text_config(double size, PangoWeight weight)
 {
-	pango_font_description_set_absolute_size(desc[i], size * PANGO_SCALE);
-	pango_font_description_set_weight(desc[i], weight);
-	pango_layout_set_font_description(font_layout, desc[i]);
+	pango_font_description_set_absolute_size(font_desc, size * PANGO_SCALE);
+	pango_font_description_set_weight(font_desc, weight);
+	pango_layout_set_font_description(font_layout, font_desc);
 }
 static void text_shorten(double w)
 {
@@ -128,4 +126,11 @@ static void text_left(double x, double y, double w, double h, const char* str)
 	y += (h - (double)_h / PANGO_SCALE) / 2.0;
 
 	cairo_move_to(cr, x, y);
+}
+
+static void draw_icon(int color, cairo_surface_t* icon, double x, double y)
+{
+	cairo_set_source_rgba(
+		cr, colors[color + 0], colors[color + 1], colors[color + 2], 1.0);
+	cairo_mask_surface(cr, icon, x, y);
 }
