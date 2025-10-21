@@ -66,7 +66,7 @@
 #define PLAYER_MARGIN_INNER 5
 #define PLAYER_WIDTH 380
 
-#define PLAYER_TEXT_SIZE 16
+#define PLAYER_TEXT_SIZE 17
 #define PLAYER_TEXT_OFFSET 1
 
 #define PLAYER_BUTTON_OFFSET 2
@@ -146,8 +146,8 @@
 
 #define CLOCK_MARGIN_OUTER 20
 
-#define CLOCK_TIME_OFFSET 3
-#define CLOCK_TIME_SIZE 19
+#define CLOCK_TIME_OFFSET 1
+#define CLOCK_TIME_SIZE 22
 #define CLOCK_TIME_LENGTH 60
 
 #define CLOCK_DATE_OFFSET 3
@@ -169,7 +169,7 @@
 #define CLOCK_DATE_H CLOCK_DATE_SIZE
 #define CLOCK_DATE_W CLOCK_DATE_LENGTH
 #define CLOCK_DATE_X CLOCK_MARGIN_OUTER
-#define CLOCK_DATE_Y (WINDOW_HEIGHT - CLOCK_DATE_H - CLOCK_TIME_OFFSET)
+#define CLOCK_DATE_Y (WINDOW_HEIGHT - CLOCK_DATE_H - CLOCK_DATE_OFFSET)
 
 // ======================================================================
 //                                  METER                                 

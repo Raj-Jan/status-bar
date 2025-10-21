@@ -110,12 +110,12 @@ static void draw_time(double x)
 		'0' + data_clock.time_minute % 10,
 		'\0' };
 
-	const double y = CLOCK_TIME_OFFSET;
+	const double y = CLOCK_TIME_Y;
 
 	draw_square(x, y, CLOCK_TIME_LENGTH + 1, CLOCK_TIME_SIZE, 0);
 	draw_fill(COLOR_SURFACE0, 1.0);
 
-	text_config(CLOCK_TIME_SIZE, PANGO_WEIGHT_SEMIBOLD);
+	text_config(CLOCK_TIME_SIZE, PANGO_WEIGHT_MEDIUM);
 	text_right(x, y, CLOCK_TIME_LENGTH, CLOCK_TIME_SIZE, text_time);
 	text_draw(COLOR_PEACH, 1.0);
 }
@@ -142,12 +142,12 @@ static void draw_date(double x)
 	text_date[sizeof(text_date) - 3] = '0' + (data_clock.date_month + 1) / 10;
 	text_date[sizeof(text_date) - 2] = '0' + (data_clock.date_month + 1) % 10;
 
-	const double y = WINDOW_HEIGHT - CLOCK_TIME_OFFSET - CLOCK_DATE_SIZE;
+	const double y = CLOCK_DATE_Y;
 
 	draw_square(x, y, CLOCK_DATE_LENGTH + 1, CLOCK_DATE_SIZE + 2, 0);
 	draw_fill(COLOR_SURFACE0, 1.0);
 
-	text_config(CLOCK_DATE_SIZE, PANGO_WEIGHT_MEDIUM);
+	text_config(CLOCK_DATE_SIZE, PANGO_WEIGHT_NORMAL);
 	text_right(x, y, CLOCK_DATE_LENGTH, CLOCK_DATE_SIZE, text_date);
 	text_draw(COLOR_PEACH, 1.0);
 }
@@ -204,7 +204,7 @@ static void draw_meter_text(double x, int j, double w, const char* str)
 	draw_square(x, y, w + 1, METER_TEXT_SIZE, 0);
 	draw_fill(COLOR_SURFACE0, 1.0);
 
-	text_config(METER_TEXT_SIZE, PANGO_WEIGHT_SEMIBOLD);
+	text_config(METER_TEXT_SIZE, PANGO_WEIGHT_MEDIUM);
 	text_left(x, 0, w, WINDOW_HEIGHT, str);
 	text_draw(j, 1.0);
 }
