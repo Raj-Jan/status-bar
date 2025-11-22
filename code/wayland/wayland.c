@@ -202,9 +202,39 @@ void* wayland_setup(struct wayland_t* this,
 {
 	this->surface = wl_compositor_create_surface(compositor);
 	wl_surface_set_user_data(this->surface, this);
-
-	return zwlr_layer_shell_v1_get_layer_surface(layer_shell,
+	this->surface_v1 = zwlr_layer_shell_v1_get_layer_surface(layer_shell,
 		this->surface, 0, layer, name);
+
+	return this->surface_v1;
+}
+void* wayland_close(struct wayland_t* this)
+{
+	if (this->callback)
+	{
+		wl_callback_destroy(this->callback);
+        this->callback = NULL;
+	}
+	if (this->surface_v1)
+	{
+		zwlr_layer_surface_v1_destroy(this->surface_v1);
+		this->surface_v1 = 0;
+	}
+	if (this->surface)
+	{
+		wl_surface_destroy(this->surface);
+		this->surface = 0;
+	}
+	if (this->buffer)
+	{
+		wl_buffer_destroy(this->buffer);
+		this->buffer = 0;
+	}
+	if (this->memory_ptr)
+	{
+		munmap(this->memory_ptr, this->memory_len);
+		this->memory_ptr = 0;
+		this->memory_len = 0;
+	}
 }
 void* wayland_alloc(struct wayland_t* this, 
 	int width, int height, const char* name)
@@ -218,6 +248,9 @@ void* wayland_alloc(struct wayland_t* this,
 	void* pool = wl_shm_create_pool(shm, fd, size);
 	close(fd);
 
+	this->memory_ptr = memory;
+	this->memory_len = size;
+
 	this->buffer = wl_shm_pool_create_buffer(
 		pool, 0, width, height, width * 4, WL_SHM_FORMAT_ARGB8888);
 	wl_shm_pool_destroy(pool);
@@ -228,8 +261,12 @@ void wayland_frame(struct wayland_t* this,
 {
 	if (states)
 	{
-		struct wl_callback* callback = wl_surface_frame(this->surface);
-		wl_callback_add_listener(callback, listener, 0);
+		this->callback = wl_surface_frame(this->surface);
+		wl_callback_add_listener(this->callback, listener, 0);
+	}
+	else
+	{
+		this->callback = 0;
 	}
 
     wl_surface_attach(this->surface, this->buffer, 0, 0);
@@ -238,6 +275,8 @@ void wayland_frame(struct wayland_t* this,
 void wayland_touch(struct wayland_t* this, 
 	const struct wl_callback_listener* listener)
 {
+	if (this->surface == 0) return;
+
 	struct wl_callback* callback = wl_surface_frame(this->surface);
 	wl_callback_add_listener(callback, listener, 0);
 }

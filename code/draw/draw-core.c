@@ -381,34 +381,37 @@ int draw_core_setup(void* data)
 		data, CAIRO_FORMAT_ARGB32, WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH * 4);
 	cr = cairo_create(surface);
 
-	font_desc = pango_font_description_from_string("Sans");
-	font_layout = pango_cairo_create_layout(cr);
+	if (!font_desc)
+	{
+		font_desc = pango_font_description_from_string("Sans");
+		font_layout = pango_cairo_create_layout(cr);
 
-	icon_app[0] = cairo_image_surface_create_for_data(icon_from_data(vscode));
-	icon_app[1] = cairo_image_surface_create_for_data(icon_from_data(firefox));
-	icon_app[2] = cairo_image_surface_create_for_data(icon_from_data(discord));
-	icon_app[3] = cairo_image_surface_create_for_data(icon_from_data(steam));
-	icon_app[4] = cairo_image_surface_create_for_data(icon_from_data(spotify));
-	icon_app[5] = cairo_image_surface_create_for_data(icon_from_data(blender));
-	icon_app[6] = cairo_image_surface_create_for_data(icon_from_data(krita));
-	icon_app[7] = cairo_image_surface_create_for_data(icon_from_data(osu));
+		icon_app[0] = cairo_image_surface_create_for_data(icon_from_data(vscode));
+		icon_app[1] = cairo_image_surface_create_for_data(icon_from_data(firefox));
+		icon_app[2] = cairo_image_surface_create_for_data(icon_from_data(discord));
+		icon_app[3] = cairo_image_surface_create_for_data(icon_from_data(steam));
+		icon_app[4] = cairo_image_surface_create_for_data(icon_from_data(spotify));
+		icon_app[5] = cairo_image_surface_create_for_data(icon_from_data(blender));
+		icon_app[6] = cairo_image_surface_create_for_data(icon_from_data(krita));
+		icon_app[7] = cairo_image_surface_create_for_data(icon_from_data(osu));
 
-	icon_pwr[0] = cairo_image_surface_create_for_data(icon_from_data(bolt));
-	icon_pwr[1] = cairo_image_surface_create_for_data(icon_from_data(power_off));
-	icon_pwr[2] = cairo_image_surface_create_for_data(icon_from_data(rotate_left));
-	icon_pwr[3] = cairo_image_surface_create_for_data(icon_from_data(moon));
-	icon_pwr[4] = cairo_image_surface_create_for_data(icon_from_data(gear));
+		icon_pwr[0] = cairo_image_surface_create_for_data(icon_from_data(bolt));
+		icon_pwr[1] = cairo_image_surface_create_for_data(icon_from_data(power_off));
+		icon_pwr[2] = cairo_image_surface_create_for_data(icon_from_data(rotate_left));
+		icon_pwr[3] = cairo_image_surface_create_for_data(icon_from_data(moon));
+		icon_pwr[4] = cairo_image_surface_create_for_data(icon_from_data(gear));
 
-	icon_player[0] = cairo_image_surface_create_for_data(icon_from_data(backward));
-	icon_player[1] = cairo_image_surface_create_for_data(icon_from_data(forward));
-	icon_player[2] = cairo_image_surface_create_for_data(icon_from_data(pause));
-	icon_player[3] = cairo_image_surface_create_for_data(icon_from_data(play));
+		icon_player[0] = cairo_image_surface_create_for_data(icon_from_data(backward));
+		icon_player[1] = cairo_image_surface_create_for_data(icon_from_data(forward));
+		icon_player[2] = cairo_image_surface_create_for_data(icon_from_data(pause));
+		icon_player[3] = cairo_image_surface_create_for_data(icon_from_data(play));
 
-	icon_meter[0] = cairo_image_surface_create_for_data(icon_from_data(graphics));
-	icon_meter[1] = cairo_image_surface_create_for_data(icon_from_data(microchip));
-	icon_meter[2] = cairo_image_surface_create_for_data(icon_from_data(layers));
-	icon_meter[3] = cairo_image_surface_create_for_data(icon_from_data(cubes));
-	icon_meter[4] = cairo_image_surface_create_for_data(icon_from_data(house));
+		icon_meter[0] = cairo_image_surface_create_for_data(icon_from_data(graphics));
+		icon_meter[1] = cairo_image_surface_create_for_data(icon_from_data(microchip));
+		icon_meter[2] = cairo_image_surface_create_for_data(icon_from_data(layers));
+		icon_meter[3] = cairo_image_surface_create_for_data(icon_from_data(cubes));
+		icon_meter[4] = cairo_image_surface_create_for_data(icon_from_data(house));
+	}
 
 	draw_round(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, WINDOW_RADIUS);
 	draw_fill(COLOR_SURFACE0, 1.0);
@@ -431,7 +434,21 @@ int draw_core_setup(void* data)
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_ATOP);
 
+	data_states.dirty_core = (1ul << ELEMENT_COUNT) - 1;
 	return draw_core_frame();
+}
+int draw_core_close()
+{
+	if (surface)
+	{
+		cairo_surface_destroy(surface);
+		surface = 0;
+	}
+	if (cr)
+	{
+		cairo_destroy(cr);
+		cr = 0;
+	}
 }
 int draw_core_frame()
 {
@@ -494,6 +511,13 @@ int draw_core_frame()
     cairo_surface_flush(surface);
 
 	return (data_states.frame_requested_core = (data_states.dirty_core > 0));
+}
+int draw_core_empty()
+{
+	draw_square(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+	draw_fill(COLOR_SURFACE0, 1.0);
+
+	data_states.dirty_core = 0;
 }
 
 void draw_core_image(const char* name)

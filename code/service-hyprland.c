@@ -1,4 +1,5 @@
 #include "service-hyprland.h"
+#include "wayland/wayland-core.h"
 #include "data/states.h"
 #include "data/hyprland.h"
 #include "data/tray.h"
@@ -8,6 +9,8 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+
+#define WORKSPACE_HIDE_CORE 0b1100000000u
 
 static long string_cmp(const char* str, const char* exp)
 {
@@ -114,11 +117,20 @@ static int hyprland_connect(const char* path)
 
 static void hyprland_switch(unsigned long index)
 {
-	const uint64_t mask1 = (1 << data_hyprland.workspace_active);
-	const uint64_t mask2 = (1 << index);
-
 	data_states.dirty_core |= (1 << (ELEMENT_WORKSPACE0 + data_hyprland.workspace_active));
 	data_states.dirty_core |= (1 << (ELEMENT_WORKSPACE0 + index));
+
+	const uint32_t i = (1u << index);
+	const uint32_t j = (1u << data_hyprland.workspace_active);
+	
+	if ((WORKSPACE_HIDE_CORE & i) && !(WORKSPACE_HIDE_CORE & j))
+	{
+		wayland_delete_core();
+	}	
+	if (!(WORKSPACE_HIDE_CORE & i) && (WORKSPACE_HIDE_CORE & j))
+	{
+		wayland_create_core();
+	}
 
 	data_hyprland.workspace_active = index;
 }
@@ -204,6 +216,10 @@ static void hyprland_activeworkspace()
 
 	data_hyprland.workspace_active = i;
 	data_states.dirty_core |= (1 << i);
+
+	if ((1 << i) & WORKSPACE_HIDE_CORE) return;
+	
+	wayland_create_core();
 }
 static void hyprland_clients()
 {

@@ -99,6 +99,11 @@ void wayland_create_core()
 
 	wl_surface_commit(instance.surface);
 }
+void wayland_delete_core()
+{
+	wayland_close(&instance);
+	draw_core_close();
+}
 void wayland_update_core()
 {
 	wayland_touch(&instance, &listener_callback);

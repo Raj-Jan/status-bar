@@ -3,6 +3,7 @@
 #include "service-hyprland.h"
 #include "service-period.h"
 #include "service-wayland.h"
+#include "wayland/wayland-core.h"
 
 #include <poll.h>
 #include <unistd.h>
@@ -27,9 +28,9 @@ int main(int argc, char* argv[])
 	set_directory(CACHE_PATH);
 
 	service_create_dbus();
+	service_create_wayland();
 	service_create_hyprland();
 	service_create_period(buffer, sizeof(buffer));
-	service_create_wayland();
 
 	struct pollfd fds[] = {
 		{ .fd = service_pollfd_dbus(), .events = POLLIN },
@@ -37,8 +38,6 @@ int main(int argc, char* argv[])
 		{ .fd = service_pollfd_period(), .events = POLLIN },
 		{ .fd = service_pollfd_wayland(), .events = POLLIN },
 	};
-
-	data_states.dirty_core |= (1ul << ELEMENT_COUNT) - 1;
 
 	while (poll(fds, sizeof(fds) / sizeof(*fds), -1) > 0)
 	{
@@ -62,6 +61,7 @@ int main(int argc, char* argv[])
 		
 		if (!data_states.frame_requested_core && data_states.dirty_core != 0)
 		{
+			wayland_update_core();
 			service_notify_wayland_core();
 		}
 	}

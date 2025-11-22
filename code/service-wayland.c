@@ -19,7 +19,6 @@ int service_create_wayland()
 {
 	display = wl_display_connect(0);
 	wayland_emplace(display);
-	wayland_create_core();
 }
 int service_pollfd_wayland()
 {
@@ -53,6 +52,5 @@ int service_update_wayland(int fd, char* buffer, unsigned long length)
 }
 int service_notify_wayland_core()
 {
-	wayland_update_core();
 	return wl_display_flush(display);
 }
