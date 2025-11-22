@@ -69,6 +69,7 @@ static void pointer_axis_relative_direction(void* data, struct wl_pointer* wl_po
 static void pointer_enter(void* data, struct wl_pointer* wl_pointer,
    uint32_t serial, struct wl_surface* surface, wl_fixed_t x, wl_fixed_t y)
 {
+	if (!surface) return;
 	struct wayland_t* instance = wl_surface_get_user_data(surface);
 	if (instance->pointer.enter)
 	{
@@ -78,6 +79,7 @@ static void pointer_enter(void* data, struct wl_pointer* wl_pointer,
 static void pointer_leave(void* data, struct wl_pointer* wl_pointer,
    uint32_t serial, struct wl_surface* surface)
 {
+	if (!surface) return;
 	struct wayland_t* instance = wl_surface_get_user_data(surface);
 	if (instance->pointer.leave)
 	{
@@ -209,6 +211,20 @@ void* wayland_setup(struct wayland_t* this,
 }
 void* wayland_close(struct wayland_t* this)
 {
+	pointer_listener = (struct wl_pointer_listener){
+		.enter = pointer_enter,
+		.leave = pointer_leave,
+		.motion = pointer_motion,
+		.button = pointer_button,
+		.axis = pointer_axis,
+		.frame = pointer_frame,
+		.axis_source = pointer_axis_source,
+		.axis_stop = pointer_axis_stop,
+		.axis_discrete = pointer_axis_discrete,
+		.axis_value120 = pointer_axis_value120,
+		.axis_relative_direction = pointer_axis_relative_direction
+	};
+
 	if (this->callback)
 	{
 		wl_callback_destroy(this->callback);
