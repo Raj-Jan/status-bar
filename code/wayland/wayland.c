@@ -275,7 +275,8 @@ void* wayland_alloc(struct wayland_t* this,
 void wayland_frame(struct wayland_t* this,
 	const struct wl_callback_listener* listener, int states)
 {
-	if (states)
+	if (states < 0) return;
+	if (states > 0)
 	{
 		this->callback = wl_surface_frame(this->surface);
 		wl_callback_add_listener(this->callback, listener, 0);

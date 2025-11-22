@@ -452,6 +452,8 @@ int draw_core_close()
 }
 int draw_core_frame()
 {
+	if (cr == 0) return -1;
+
 	if (is_dirty(ELEMENT_BUTTON_MENU)) draw_button(MENU_POS + BUTTON_INNER_X);
 
 	if (is_dirty(ELEMENT_APP0)) draw_app(APP_POS(0), 0);
