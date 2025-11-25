@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <stdio.h>
 
 static struct wl_pointer* pointer;
 static struct wl_seat* seat;
@@ -287,6 +288,7 @@ void wayland_frame(struct wayland_t* this,
 	}
 
     wl_surface_attach(this->surface, this->buffer, 0, 0);
+	wl_surface_damage(this->surface, 0, 0, INT32_MAX, INT32_MAX);
     wl_surface_commit(this->surface);
 }
 void wayland_touch(struct wayland_t* this, 
@@ -294,6 +296,8 @@ void wayland_touch(struct wayland_t* this,
 {
 	if (this->surface == 0) return;
 
-	struct wl_callback* callback = wl_surface_frame(this->surface);
-	wl_callback_add_listener(callback, listener, 0);
+	this->callback = wl_surface_frame(this->surface);
+	wl_callback_add_listener(this->callback, listener, 0);
+	wl_surface_damage(this->surface, 0, 0, INT32_MAX, INT32_MAX);
+	wl_surface_commit(this->surface);
 }

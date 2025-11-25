@@ -8,6 +8,7 @@
 #include <poll.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <stdio.h>
 
 #define CACHE_PATH "/home/remi/.cache/status-bar"
 
@@ -25,6 +26,8 @@ static void set_directory(const char* path)
 
 int main(int argc, char* argv[])
 {
+	data_states.frame_requested_core = 0;
+
 	set_directory(CACHE_PATH);
 
 	service_create_dbus();

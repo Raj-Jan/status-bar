@@ -4,6 +4,7 @@
 #include "draw/draw-core.h"
 #include "input/input-core.h"
 #include "layout/layout-core.h"
+#include <stdio.h>
 
 static struct wayland_t instance;
 

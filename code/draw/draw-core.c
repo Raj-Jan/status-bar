@@ -512,14 +512,7 @@ int draw_core_frame()
 
     cairo_surface_flush(surface);
 
-	return (data_states.frame_requested_core = (data_states.dirty_core > 0));
-}
-int draw_core_empty()
-{
-	draw_square(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
-	draw_fill(COLOR_SURFACE0, 1.0);
-
-	data_states.dirty_core = 0;
+	return (data_states.frame_requested_core = (data_states.dirty_core != 0));
 }
 
 void draw_core_image(const char* name)
