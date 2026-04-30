@@ -50,7 +50,7 @@ static long string_application(const char* name)
 	if (string_cmp(name, "firefox")) return 1;
 	if (string_cmp(name, "vesktop")) return 2;
 	if (string_cmp(name, "steam")) return 3;
-	if (string_cmp(name, "spotify")) return 4;
+	if (string_cmp(name, "Spotify")) return 4;
 	if (string_cmp(name, "blender")) return 5;
 	if (string_cmp(name, "krita")) return 6;
 	if (string_cmp(name, "osu!")) return 7;
